@@ -1,9 +1,13 @@
 package io.github.Erissonteixeira.api_crudbiblioteca.service;
+
+import io.github.Erissonteixeira.api_crudbiblioteca.dto.AutorRequestDTO;
+import io.github.Erissonteixeira.api_crudbiblioteca.dto.AutorResponseDTO;
 import io.github.Erissonteixeira.api_crudbiblioteca.model.Autor;
 import io.github.Erissonteixeira.api_crudbiblioteca.repository.AutorRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AutorService {
@@ -14,25 +18,36 @@ public class AutorService {
         this.autorRepository = autorRepository;
     }
 
-    public Autor criarAutor(Autor autor){
-        return autorRepository.save(autor);
+    public AutorResponseDTO criarAutor(AutorRequestDTO dto){
+        Autor autor = new Autor(dto.getNome());
+        Autor salvo = autorRepository.save(autor);
+        return new AutorResponseDTO(salvo.getId(), salvo.getNome());
     }
-    public List<Autor> listarAutores(){
-        return autorRepository.findAll();
+
+    public List<AutorResponseDTO> listarAutores(){
+        return autorRepository.findAll()
+                .stream()
+                .map(a -> new AutorResponseDTO(a.getId(), a.getNome()))
+                .collect(Collectors.toList());
     }
-    public Optional<Autor> buscarPorId(Long id){
-        return autorRepository.findById(id);
+
+    public Optional<AutorResponseDTO> buscarPorId(Long id){
+        return autorRepository.findById(id)
+                .map(a -> new AutorResponseDTO(a.getId(), a.getNome()));
     }
-    public Autor atualizarAutor(Long id, Autor autorAtualizado){
+
+    public AutorResponseDTO atualizarAutor(Long id, AutorRequestDTO dto){
         return autorRepository.findById(id)
                 .map(autor -> {
-                    autor.setNome(autorAtualizado.getNome());
-                    return autorRepository.save(autor);
+                    autor.setNome(dto.getNome());
+                    Autor atualizado = autorRepository.save(autor);
+                    return new AutorResponseDTO(atualizado.getId(), atualizado.getNome());
                 })
                 .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
     }
+
     public void deletarAutor(Long id){
-        if (!autorRepository.existsById(id)) {
+        if (!autorRepository.existsById(id)){
             throw new RuntimeException("Autor não encontrado");
         }
         autorRepository.deleteById(id);
