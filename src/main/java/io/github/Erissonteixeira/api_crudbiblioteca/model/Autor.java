@@ -1,7 +1,6 @@
 package io.github.Erissonteixeira.api_crudbiblioteca.model;
 
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
