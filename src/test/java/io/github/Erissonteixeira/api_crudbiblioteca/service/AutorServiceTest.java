@@ -123,4 +123,16 @@ public class AutorServiceTest {
         verify(autorRepository, times(1)).findById(1l);
         verify(autorRepository, times(1)).save(any(Autor.class));
     }
+    @Test
+    @DisplayName("Deve deletar autor existente com sucesso")
+    void shouldDeleteAuthorSuccessfully(){
+        when(autorRepository.existsById(1L)).thenReturn(true);
+
+        autorService.deletarAutor(1L);
+
+        verify(autorRepository, times(1)).deleteById(1l);
+
+    }
+
+
 }
