@@ -95,4 +95,32 @@ public class AutorServiceTest {
         assertEquals("Machado de Assis", response.get().getNome());
         verify(autorRepository, times(1)).findById(1l);
     }
+    @Test
+    @DisplayName("Deve Atualizar autor existente com sucesso")
+    void shouldUpdateAuthorSucessfully(){
+        Autor autorExistente = Autor.builder()
+                .id(1L)
+                .nome("Machado de Assis")
+                .build();
+
+        AutorRequestDTO dto = new AutorRequestDTO("Machado de Assis");
+
+        when(autorRepository.findById(1L)).thenReturn(Optional.of(autorExistente));
+
+        Autor autorAtualizado = Autor.builder()
+                .id(1L)
+                .nome("Machado de Assis Atualizado")
+                .build();
+
+        when(autorRepository.save(any(Autor.class))).thenReturn(autorAtualizado);
+
+        AutorResponseDTO response = autorService.atualizarAutor(1L, dto);
+
+        assertNotNull(response);
+        assertEquals(1L, response.getId());
+        assertEquals("Machado de Assis Atualizado", response.getNome());
+
+        verify(autorRepository, times(1)).findById(1l);
+        verify(autorRepository, times(1)).save(any(Autor.class));
+    }
 }
