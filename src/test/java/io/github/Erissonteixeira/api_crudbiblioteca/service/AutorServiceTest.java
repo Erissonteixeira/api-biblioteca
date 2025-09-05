@@ -13,8 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -68,5 +67,14 @@ public class AutorServiceTest {
         assertEquals("Machado de Assis", responseList.get(0).getNome());
         assertEquals("Clarice Lispector", responseList.get(1).getNome());
         verify(autorRepository, times(1)).findAll();
+    }
+    @Test
+    @DisplayName("Deve lançar exceção ao criar autor com nome nulo")
+    void shouldthrowExceptionWhenAuthorNameIsNull(){
+        AutorRequestDTO dto = new AutorRequestDTO(null);
+
+        assertThrows(NullPointerException.class, () -> autorService.criarAutor(dto));
+
+        verify(autorRepository, never()).save(any(Autor.class));
     }
 }
