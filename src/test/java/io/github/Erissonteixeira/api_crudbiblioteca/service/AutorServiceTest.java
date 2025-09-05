@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,5 +77,22 @@ public class AutorServiceTest {
         assertThrows(NullPointerException.class, () -> autorService.criarAutor(dto));
 
         verify(autorRepository, never()).save(any(Autor.class));
+    }
+    @Test
+    @DisplayName("Deve retornar autor pelo id")
+    void shouldReturnAuthorById(){
+        Autor autor = Autor.builder()
+                .id(1L)
+                .nome("Machado de Assis")
+                .build();
+
+        when(autorRepository.findById(1L)).thenReturn(Optional.of(autor));
+
+        Optional<AutorResponseDTO> response = autorService.buscarPorId(1L);
+
+        assertTrue(response.isPresent());
+        assertEquals(1L, response.get().getId());
+        assertEquals("Machado de Assis", response.get().getNome());
+        verify(autorRepository, times(1)).findById(1l);
     }
 }
