@@ -19,6 +19,9 @@ public class AutorService {
     }
 
     public AutorResponseDTO criarAutor(AutorRequestDTO dto){
+        if (dto.getNome() == null || dto.getNome().isBlank()){
+            throw new NullPointerException("O Nome do autor não pode ser nulo ou vazio");
+        }
         Autor autor = new Autor(dto.getNome());
         Autor salvo = autorRepository.save(autor);
         return new AutorResponseDTO(salvo.getId(), salvo.getNome());
