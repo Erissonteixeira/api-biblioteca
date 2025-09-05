@@ -133,6 +133,14 @@ public class AutorServiceTest {
         verify(autorRepository, times(1)).deleteById(1l);
 
     }
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar deletar autor inexistente")
+    void shouldThrowExceptionWhenDeletingNonExistingAuthor(){
+        when(autorRepository.existsById(1l)).thenReturn(false);
 
+        assertThrows(RuntimeException.class, () -> autorService.deletarAutor(1l));
+
+        verify(autorRepository, never()).deleteById(anyLong());
+    }
 
 }
