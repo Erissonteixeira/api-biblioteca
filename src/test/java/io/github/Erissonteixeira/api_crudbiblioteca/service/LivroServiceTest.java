@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,5 +64,35 @@ public class LivroServiceTest {
 
         verify(autorRepository, times(1)).findById(1L);
         verify(livroRepository, times(1)).save(any(Livro.class));
+    }
+    @Test
+    @DisplayName("Deve listar todos os livros")
+    void shouldListAllBooks(){
+        Livro livro1 = Livro.builder()
+                .id(1L)
+                .titulo("Dom Casmurro")
+                .anoPublicacao(1899)
+                .genero("Romance")
+                .status("Disponivel")
+                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
+                .build();
+
+        Livro livro2 = Livro.builder().id(2L)
+                .titulo("Memórias Póstumas de Brás Cubas")
+                .anoPublicacao(1881)
+                .genero("Romance")
+                .status("Disponivel")
+                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
+                .build();
+
+        when(livroRepository.findAll()).thenReturn(List.of(livro1, livro2));
+
+        List<LivroResponseDTO> responseList = livroService.listarLivros();
+
+        assertNotNull(responseList, "A lista de livros não deve ser nula");
+        assertEquals(2, responseList.size(), "Deve retornar exatamente 2 livros");
+        assertEquals("Dom Casmurro", responseList.get(0).getTitulo(), "Título do primeiro livro incorreto");
+        assertEquals("Memórias Póstumas de Brás Cubas", responseList.get(1).getTitulo(), "Título do segundo livro incorreto");
+        verify(livroRepository, times(1)).findAll();
     }
 }
