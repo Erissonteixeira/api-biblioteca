@@ -71,7 +71,7 @@ public class AutorServiceTest {
     }
     @Test
     @DisplayName("Deve lançar exceção ao criar autor com nome nulo")
-    void shouldthrowExceptionWhenAuthorNameIsNull(){
+    void shouldThrowExceptionWhenAuthorNameIsNull(){
         AutorRequestDTO dto = new AutorRequestDTO(null);
 
         assertThrows(NullPointerException.class, () -> autorService.criarAutor(dto));
