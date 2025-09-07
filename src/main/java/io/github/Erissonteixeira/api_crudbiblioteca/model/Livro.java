@@ -3,8 +3,12 @@ package io.github.Erissonteixeira.api_crudbiblioteca.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 @Entity
+@Builder
+@AllArgsConstructor
 public class Livro {
 
     @Id
