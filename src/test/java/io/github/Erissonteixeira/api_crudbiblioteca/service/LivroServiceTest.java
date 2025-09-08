@@ -117,4 +117,45 @@ public class LivroServiceTest {
 
         verify(livroRepository, times(1)).findById(1l);
     }
+    @Test
+    @DisplayName("Deve atualizar livro existente com sucesso")
+    void shouldUpdateBookSuccessfully(){
+        Livro livroExistente = Livro.builder()
+                .id(1L)
+                .titulo("Dom Casmurro")
+                .anoPublicacao(1899)
+                .genero("Romance")
+                .status("Disponivel")
+                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
+                .build();
+
+        LivroRequestDTO dto = new LivroRequestDTO("Dom Casmurro", 1900, "Romance", "Emprestado", 1L);
+
+        Autor autor = Autor.builder().id(1L).nome("Machado de Assis").build();
+
+        Livro livroAtualizado = Livro.builder()
+                .id(1L)
+                .titulo("Dom Casmurro Atualizado")
+                .anoPublicacao(1900)
+                .genero("Romance")
+                .status("Emprestado")
+                .autor(autor)
+                .build();
+
+        when(livroRepository.findById(1L)).thenReturn(Optional.of(livroExistente));
+        when(autorRepository.findById(1l)).thenReturn(Optional.of(autor));
+        when(livroRepository.save(any(Livro.class))).thenReturn(livroAtualizado);
+
+        LivroResponseDTO response = livroService.atualizarLivro(1L, dto);
+
+        assertNotNull(response, "O livro atualizado não deve ser nulo");
+        assertEquals("Dom Casmurro Atualizado", response.getTitulo(), "Título atualizado incorreto");
+        assertEquals(1900, response.getAnoPublicacao(), "Ano de publicação atualizado incorreto");
+        assertEquals("Emprestado", response.getStatus(), "Status atualizado incorreto");
+        assertEquals("Machado de Assis", response.getAutorNome(), "Nome do autor incorreto");
+
+        verify(livroRepository, times(1)).findById(1L);
+        verify(autorRepository, times(1)).findById(1L);
+        verify(livroRepository, times(1)).save(any(Livro.class));
+    }
 }
