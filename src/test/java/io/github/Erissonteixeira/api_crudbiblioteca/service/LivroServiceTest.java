@@ -158,4 +158,13 @@ public class LivroServiceTest {
         verify(autorRepository, times(1)).findById(1L);
         verify(livroRepository, times(1)).save(any(Livro.class));
     }
+    @Test
+    @DisplayName("Deve deletar livro existente com sucesso")
+    void shouldDeletebookSuccesfully(){
+        when(livroRepository.existsById(1L)).thenReturn(true);
+
+        livroService.deletarLivro(1L);
+
+        verify(livroRepository, times(1)).deleteById(1L);
+    }
 }
