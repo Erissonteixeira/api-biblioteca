@@ -167,4 +167,13 @@ public class LivroServiceTest {
 
         verify(livroRepository, times(1)).deleteById(1L);
     }
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar deletar livro inexistente")
+    void shouldThrowExceptionWhenDeletingNonExistingBook(){
+        when(livroRepository.existsById(1L)).thenReturn(false);
+
+        assertThrows(RuntimeException.class, ()-> livroService.deletarLivro(1L), "Deve lançar exceção para livro inexistente");
+
+        verify(livroRepository, never()).deleteById(anyLong());
+    }
 }
