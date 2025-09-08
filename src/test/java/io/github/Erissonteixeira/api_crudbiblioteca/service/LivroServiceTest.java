@@ -16,8 +16,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -94,5 +93,28 @@ public class LivroServiceTest {
         assertEquals("Dom Casmurro", responseList.get(0).getTitulo(), "Título do primeiro livro incorreto");
         assertEquals("Memórias Póstumas de Brás Cubas", responseList.get(1).getTitulo(), "Título do segundo livro incorreto");
         verify(livroRepository, times(1)).findAll();
+    }
+    @Test
+    @DisplayName("Deve retornar livro pelo id")
+    void shouldReturnBookById(){
+        Livro livro = Livro.builder()
+                .id(1L)
+                .titulo("Dom Casmurro")
+                .anoPublicacao(1899)
+                .genero("Romance")
+                .status("Disponivel")
+                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
+                .build();
+
+        when(livroRepository.findById(1L)).thenReturn(Optional.of(livro));
+
+        Optional<LivroResponseDTO> response = livroService.buscarPorId(1L);
+
+        assertTrue(response.isPresent(), "O livro deve ser encontrado");
+        assertEquals(1L, response.get().getId(), "ID do livro incorreto");
+        assertEquals("Dom Casmurro", response.get().getTitulo(), "Título do livro incorreto");
+        assertEquals("Machado de Assis", response.get().getAutorNome(), "Nome do autor incorreto");
+
+        verify(livroRepository, times(1)).findById(1l);
     }
 }
