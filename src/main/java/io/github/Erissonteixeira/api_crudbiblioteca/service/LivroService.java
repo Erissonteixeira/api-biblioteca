@@ -2,6 +2,7 @@ package io.github.Erissonteixeira.api_crudbiblioteca.service;
 
 import io.github.Erissonteixeira.api_crudbiblioteca.dto.LivroRequestDTO;
 import io.github.Erissonteixeira.api_crudbiblioteca.dto.LivroResponseDTO;
+import io.github.Erissonteixeira.api_crudbiblioteca.mapper.LivroMapper;
 import io.github.Erissonteixeira.api_crudbiblioteca.model.Autor;
 import io.github.Erissonteixeira.api_crudbiblioteca.model.Livro;
 import io.github.Erissonteixeira.api_crudbiblioteca.repository.AutorRepository;
@@ -17,23 +18,20 @@ public class LivroService {
 
     private final LivroRepository livroRepository;
     private final AutorRepository autorRepository;
+    private final LivroMapper livroMapper;
 
-    public LivroService(LivroRepository livroRepository, AutorRepository autorRepository) {
+
+    public LivroService(LivroRepository livroRepository, AutorRepository autorRepository, LivroMapper livroMapper) {
         this.livroRepository = livroRepository;
         this.autorRepository = autorRepository;
+        this.livroMapper = livroMapper;
     }
 
     public LivroResponseDTO criarLivro(LivroRequestDTO dto){
         Autor autor = autorRepository.findById(dto.getAutorId())
                 .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
-
-        Livro livro = new Livro();
-        livro.setTitulo(dto.getTitulo());
-        livro.setAnoPublicacao(dto.getAnoPublicacao());
-        livro.setGenero(dto.getGenero());
-        livro.setStatus(dto.getStatus());
+        Livro livro = livroMapper.toEntity(dto);
         livro.setAutor(autor);
-
         Livro salvo = livroRepository.save(livro);
         return toResponseDTO(salvo);
     }
@@ -61,7 +59,6 @@ public class LivroService {
                     Autor autor = autorRepository.findById(dto.getAutorId())
                             .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
                     livro.setAutor(autor);
-
                     return toResponseDTO(livroRepository.save(livro));
                 })
                 .orElseThrow(() -> new RuntimeException("Livro não encontrado"));
