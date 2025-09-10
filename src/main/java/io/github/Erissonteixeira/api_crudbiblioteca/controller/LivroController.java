@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/livros")
+@RequestMapping("/v1/livros")
 public class LivroController {
 
     private final LivroService livroService;
@@ -22,43 +22,33 @@ public class LivroController {
 
     @PostMapping
     public ResponseEntity<LivroResponseDTO> criarLivro(@Valid @RequestBody LivroRequestDTO dto){
-        LivroResponseDTO novoLivro = livroService.criarLivro(dto);
-        return new ResponseEntity<>(novoLivro, HttpStatus.CREATED);
+        LivroResponseDTO response = livroService.criarLivro(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
     public ResponseEntity<List<LivroResponseDTO>> listarLivros(){
         List<LivroResponseDTO> livros = livroService.listarLivros();
-        return new ResponseEntity<>(livros, HttpStatus.OK);
+        return ResponseEntity.ok(livros);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LivroResponseDTO> buscarPorId(@PathVariable Long id){
         return livroService.buscarPorId(id)
-                .map(livro -> new ResponseEntity<>(livro, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LivroResponseDTO> atualizarLivro(@PathVariable Long id,
                                                            @Valid @RequestBody LivroRequestDTO dto){
-        try {
-            LivroResponseDTO atualizado = livroService.atualizarLivro(id, dto);
-            return new ResponseEntity<>(atualizado, HttpStatus.OK);
-        }
-        catch (RuntimeException e){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+       LivroResponseDTO response = livroService.atualizarLivro(id, dto);
+       return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarLivro(@PathVariable Long id){
-        try {
-            livroService.deletarLivro(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        catch (RuntimeException e){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+       livroService.deletarLivro(id);
+       return ResponseEntity.noContent().build();
     }
 }
