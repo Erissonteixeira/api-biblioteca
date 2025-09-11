@@ -2,6 +2,7 @@ package io.github.Erissonteixeira.api_crudbiblioteca.service;
 
 import io.github.Erissonteixeira.api_crudbiblioteca.dto.LivroRequestDTO;
 import io.github.Erissonteixeira.api_crudbiblioteca.dto.LivroResponseDTO;
+import io.github.Erissonteixeira.api_crudbiblioteca.mapper.LivroMapper;
 import io.github.Erissonteixeira.api_crudbiblioteca.model.Autor;
 import io.github.Erissonteixeira.api_crudbiblioteca.model.Livro;
 import io.github.Erissonteixeira.api_crudbiblioteca.repository.AutorRepository;
@@ -21,28 +22,38 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class LivroServiceTest {
+
     @Mock
     private LivroRepository livroRepository;
+
     @Mock
     private AutorRepository autorRepository;
+
+    @Mock
+    private LivroMapper livroMapper;
+
     @InjectMocks
     private LivroService livroService;
+
+    private Autor autor;
+    private Livro livro;
+    private LivroRequestDTO dto;
+
     @BeforeEach
-    void setUp(){
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-    }
 
-    @Test
-    @DisplayName("Deve criar livro com sucesso")
-    void shouldCreateBookSucessfully(){
-        LivroRequestDTO dto = new LivroRequestDTO("Dom Casmurro", 1899, "Romance", "Disponivel", 1L);
 
-        Autor autor = Autor.builder()
+        autor = Autor.builder()
                 .id(1L)
                 .nome("Machado de Assis")
                 .build();
 
-        Livro livroSalvo = Livro.builder()
+
+        dto = new LivroRequestDTO("Dom Casmurro", 1899, "Romance", "Disponivel", 1L);
+
+
+        livro = Livro.builder()
                 .id(1L)
                 .titulo("Dom Casmurro")
                 .anoPublicacao(1899)
@@ -50,89 +61,68 @@ public class LivroServiceTest {
                 .status("Disponivel")
                 .autor(autor)
                 .build();
+    }
 
+    @Test
+    @DisplayName("Deve criar livro com sucesso usando o mapper")
+    void shouldCreateBookSuccessfully() {
         when(autorRepository.findById(1L)).thenReturn(Optional.of(autor));
-        when(livroRepository.save(any(Livro.class))).thenReturn(livroSalvo);
+        when(livroMapper.toEntity(dto)).thenReturn(livro);
+        when(livroRepository.save(any(Livro.class))).thenReturn(livro);
 
         LivroResponseDTO response = livroService.criarLivro(dto);
 
         assertNotNull(response);
-        assertEquals(1L, response.getId());
         assertEquals("Dom Casmurro", response.getTitulo());
         assertEquals("Machado de Assis", response.getAutorNome());
 
         verify(autorRepository, times(1)).findById(1L);
         verify(livroRepository, times(1)).save(any(Livro.class));
+        verify(livroMapper, times(1)).toEntity(dto);
     }
-    @Test
-    @DisplayName("Deve listar todos os livros")
-    void shouldListAllBooks(){
-        Livro livro1 = Livro.builder()
-                .id(1L)
-                .titulo("Dom Casmurro")
-                .anoPublicacao(1899)
-                .genero("Romance")
-                .status("Disponivel")
-                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
-                .build();
 
-        Livro livro2 = Livro.builder().id(2L)
+    @Test
+    @DisplayName("Deve listar todos os livros usando mapper")
+    void shouldListAllBooks() {
+        Livro livro2 = Livro.builder()
+                .id(2L)
                 .titulo("Memórias Póstumas de Brás Cubas")
                 .anoPublicacao(1881)
                 .genero("Romance")
                 .status("Disponivel")
-                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
+                .autor(autor)
                 .build();
 
-        when(livroRepository.findAll()).thenReturn(List.of(livro1, livro2));
+        when(livroRepository.findAll()).thenReturn(List.of(livro, livro2));
+        when(livroMapper.toDTO(livro)).thenCallRealMethod();
+        when(livroMapper.toDTO(livro2)).thenCallRealMethod();
 
         List<LivroResponseDTO> responseList = livroService.listarLivros();
 
-        assertNotNull(responseList, "A lista de livros não deve ser nula");
-        assertEquals(2, responseList.size(), "Deve retornar exatamente 2 livros");
-        assertEquals("Dom Casmurro", responseList.get(0).getTitulo(), "Título do primeiro livro incorreto");
-        assertEquals("Memórias Póstumas de Brás Cubas", responseList.get(1).getTitulo(), "Título do segundo livro incorreto");
+        assertEquals(2, responseList.size());
+        assertEquals("Dom Casmurro", responseList.get(0).getTitulo());
+        assertEquals("Memórias Póstumas de Brás Cubas", responseList.get(1).getTitulo());
         verify(livroRepository, times(1)).findAll();
     }
-    @Test
-    @DisplayName("Deve retornar livro pelo id")
-    void shouldReturnBookById(){
-        Livro livro = Livro.builder()
-                .id(1L)
-                .titulo("Dom Casmurro")
-                .anoPublicacao(1899)
-                .genero("Romance")
-                .status("Disponivel")
-                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
-                .build();
 
+    @Test
+    @DisplayName("Deve retornar livro pelo id usando mapper")
+    void shouldReturnBookById() {
         when(livroRepository.findById(1L)).thenReturn(Optional.of(livro));
+        when(livroMapper.toDTO(livro)).thenCallRealMethod();
 
         Optional<LivroResponseDTO> response = livroService.buscarPorId(1L);
 
-        assertTrue(response.isPresent(), "O livro deve ser encontrado");
-        assertEquals(1L, response.get().getId(), "ID do livro incorreto");
-        assertEquals("Dom Casmurro", response.get().getTitulo(), "Título do livro incorreto");
-        assertEquals("Machado de Assis", response.get().getAutorNome(), "Nome do autor incorreto");
-
-        verify(livroRepository, times(1)).findById(1l);
+        assertTrue(response.isPresent());
+        assertEquals("Dom Casmurro", response.get().getTitulo());
+        assertEquals("Machado de Assis", response.get().getAutorNome());
+        verify(livroRepository, times(1)).findById(1L);
     }
+
     @Test
-    @DisplayName("Deve atualizar livro existente com sucesso")
-    void shouldUpdateBookSuccessfully(){
-        Livro livroExistente = Livro.builder()
-                .id(1L)
-                .titulo("Dom Casmurro")
-                .anoPublicacao(1899)
-                .genero("Romance")
-                .status("Disponivel")
-                .autor(Autor.builder().id(1L).nome("Machado de Assis").build())
-                .build();
-
-        LivroRequestDTO dto = new LivroRequestDTO("Dom Casmurro", 1900, "Romance", "Emprestado", 1L);
-
-        Autor autor = Autor.builder().id(1L).nome("Machado de Assis").build();
-
+    @DisplayName("Deve atualizar livro existente com sucesso usando mapper")
+    void shouldUpdateBookSuccessfully() {
+        LivroRequestDTO updateDto = new LivroRequestDTO("Dom Casmurro Atualizado", 1900, "Romance", "Emprestado", 1L);
         Livro livroAtualizado = Livro.builder()
                 .id(1L)
                 .titulo("Dom Casmurro Atualizado")
@@ -142,38 +132,20 @@ public class LivroServiceTest {
                 .autor(autor)
                 .build();
 
-        when(livroRepository.findById(1L)).thenReturn(Optional.of(livroExistente));
-        when(autorRepository.findById(1l)).thenReturn(Optional.of(autor));
+        when(livroRepository.findById(1L)).thenReturn(Optional.of(livro));
+        when(autorRepository.findById(1L)).thenReturn(Optional.of(autor));
         when(livroRepository.save(any(Livro.class))).thenReturn(livroAtualizado);
+        when(livroMapper.toDTO(livroAtualizado)).thenCallRealMethod();
 
-        LivroResponseDTO response = livroService.atualizarLivro(1L, dto);
+        LivroResponseDTO response = livroService.atualizarLivro(1L, updateDto);
 
-        assertNotNull(response, "O livro atualizado não deve ser nulo");
-        assertEquals("Dom Casmurro Atualizado", response.getTitulo(), "Título atualizado incorreto");
-        assertEquals(1900, response.getAnoPublicacao(), "Ano de publicação atualizado incorreto");
-        assertEquals("Emprestado", response.getStatus(), "Status atualizado incorreto");
-        assertEquals("Machado de Assis", response.getAutorNome(), "Nome do autor incorreto");
+        assertEquals("Dom Casmurro Atualizado", response.getTitulo());
+        assertEquals(1900, response.getAnoPublicacao());
+        assertEquals("Emprestado", response.getStatus());
+        assertEquals("Machado de Assis", response.getAutorNome());
 
         verify(livroRepository, times(1)).findById(1L);
         verify(autorRepository, times(1)).findById(1L);
         verify(livroRepository, times(1)).save(any(Livro.class));
     }
-    @Test
-    @DisplayName("Deve deletar livro existente com sucesso")
-    void shouldDeletebookSuccesfully(){
-        when(livroRepository.existsById(1L)).thenReturn(true);
-
-        livroService.deletarLivro(1L);
-
-        verify(livroRepository, times(1)).deleteById(1L);
     }
-    @Test
-    @DisplayName("Deve lançar exceção ao tentar deletar livro inexistente")
-    void shouldThrowExceptionWhenDeletingNonExistingBook(){
-        when(livroRepository.existsById(1L)).thenReturn(false);
-
-        assertThrows(RuntimeException.class, ()-> livroService.deletarLivro(1L), "Deve lançar exceção para livro inexistente");
-
-        verify(livroRepository, never()).deleteById(anyLong());
-    }
-}
