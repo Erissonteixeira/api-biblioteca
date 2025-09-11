@@ -26,7 +26,7 @@ public class AutorServiceTest {
     private AutorRepository autorRepository;
 
     @Mock
-    private AutorMapper autorMapper; // <-- Adicionado mock do Mapper
+    private AutorMapper autorMapper;
 
     @InjectMocks
     private AutorService autorService;
@@ -45,7 +45,7 @@ public class AutorServiceTest {
                 .nome("Machado de Assis")
                 .build();
 
-        when(autorMapper.toEntity(dto)).thenReturn(autorSalvo); // <-- mock Mapper
+        when(autorMapper.toEntity(dto)).thenReturn(autorSalvo);
         when(autorRepository.save(any(Autor.class))).thenReturn(autorSalvo);
         when(autorMapper.toDTO(autorSalvo)).thenReturn(new AutorResponseDTO(1L, "Machado de Assis"));
 
